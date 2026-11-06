@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Validata — Authenticity Engine | Smart Fake News & Message Detector</title>
+  <link rel="icon" type="image/png" href="assets/validata_icon_transparent.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Chart.js for Multi-Layer Radar Visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme font-medium">
+
+  <!-- PERSISTENT BACKGROUND WATERMARK (Visible across entire navigation) -->
+  <div class="ambient-background-container" aria-hidden="true">
+    <div class="mesh-orb orb-1"></div>
+    <div class="mesh-orb orb-2"></div>
+    <div class="mesh-orb orb-3"></div>
+    <div class="ambient-watermark-logo">
+      <img src="assets/validata_watermark.png" alt="Validata Watermark">
+    </div>
+  </div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="app-header">
+    <div class="header-container">
+      <!-- Brand Group with 3D Logo -->
+      <a href="#landingSection" class="brand-group" title="Validata Home">
+        <div class="brand-logo-wrapper">
+          <img src="assets/validata_icon_clean.png" alt="Validata Logo Mark" class="brand-logo-img">
+        </div>
+        <div class="brand-titles">
+          <div class="brand-name">
+            <span class="brand-text">Vali<span class="brand-highlight">data</span></span>
+          </div>
+          <span class="brand-tagline">AUTHENTICITY ENGINE</span>
+        </div>
+      </a>
+
+      <!-- Quick Actions: Senior Font Resizer, Live Counter & Theme Switcher -->
+      <div class="header-actions">
+        <!-- Senior Friendly Font Size Adjuster -->
+        <div class="accessibility-pill" title="Make text larger or smaller for easier reading">
+          <span class="a11y-label">Text Size:</span>
+          <button id="btnFontDec" class="btn-text-size" aria-label="Smaller text">A-</button>
+          <button id="btnFontReset" class="btn-text-size active" aria-label="Normal text">A</button>
+          <button id="btnFontInc" class="btn-text-size" aria-label="Larger text">A+</button>
+        </div>
+
+        <!-- Live Global Verifications Counter -->
+        <div class="quick-stats-pill" title="Total messages and links analyzed">
+          <span class="pulse-indicator"></span>
+          <span class="stat-text"><strong id="statTotal">0</strong> Analyzed</span>
+        </div>
+
+        <!-- Theme Toggle Button -->
+        <button id="themeToggleBtn" class="icon-button" aria-label="Toggle Color Theme" title="Toggle Light / Dark Mode">
+          <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="main-content">
+
+    <!-- ======================================================== -->
+    <!-- ENGAGING LANDING HERO SECTION                            -->
+    <!-- ======================================================== -->
+    <section id="landingSection" class="hero-landing">
+      <!-- Hero Top Pill -->
+      <div class="hero-pill-badge">
+        <span class="pill-sparkle">✨</span> Next-Generation Computational Journalism & Anti-Disinformation AI
+      </div>
+
+      <!-- Main Logo Hero Showcase with Glassy Look & Crisp Typography -->
+      <div class="hero-brand-centerpiece">
+        <div class="logo-aura-glow"></div>
+        <div class="logo-glass-pod">
+          <img src="assets/validata_mark_vibrant.png" alt="Validata 3D Mark" class="hero-featured-mark">
+          <div class="glass-pod-text">
+            <span class="glass-brand-name">Vali<span class="brand-highlight">data</span></span>
+            <span class="glass-brand-sub">AUTHENTICITY ENGINE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Main Headline -->
+      <h1 class="hero-main-title">
+        Unmask Falsehoods. <span class="gradient-emerald-cyan">Verify Truth.</span><br>
+        Instant AI Authenticity for Any Message or Link.
+      </h1>
+
+      <p class="hero-lead-text">
+        Received a suspicious WhatsApp forward, viral Instagram rumor, miracle medical cure, or shocking news link? 
+        <strong>Validata</strong> scans official registries, journalistic archives, and AI semantic patterns in <strong>3 seconds</strong> to tell you if it's <strong>Safe to Share</strong> or a <strong>False Hoax</strong>.
+      </p>
+
+      <!-- 1-Click Interactive Demo Chips (Instant Testing for Seniors & New Users) -->
+      <div class="hero-quick-tester-card">
+        <div class="quick-tester-header">
+          <span class="tester-sparkle">⚡</span>
+          <strong>Try a Live Real-World Example in 1 Tap:</strong>
+        </div>
+        <div class="quick-chips-grid">
+          <button class="chip-action chip-danger" data-sample="whatsapp_cancer_cure">
+            <span class="chip-emoji">🍋</span>
+            <div class="chip-text">
+              <span class="chip-title">WhatsApp Miracle Cancer Cure</span>
+              <span class="chip-sub">Fabricated Medical Hoax</span>
+            </div>
+            <span class="chip-badge-test">Test Fake ➔</span>
+          </button>
+
+          <button class="chip-action chip-success" data-sample="reuters_vaccine">
+            <span class="chip-emoji">💉</span>
+            <div class="chip-text">
+              <span class="chip-title">WHO Approved Malaria Vaccine</span>
+              <span class="chip-sub">Official Medical Journal Wire</span>
+            </div>
+            <span class="chip-badge-test">Test Genuine ➔</span>
+          </button>
+
+          <button class="chip-action chip-purple" data-sample="onion_belly_rubs">
+            <span class="chip-emoji">🐶</span>
+            <div class="chip-text">
+              <span class="chip-title">The Onion: Dog Belly Rub Strike</span>
+              <span class="chip-sub">Known Humor / Parody Outlet</span>
+            </div>
+            <span class="chip-badge-test">Test Satire ➔</span>
+          </button>
+
+          <button class="chip-action chip-cyan" data-sample="isro_space_success">
+            <span class="chip-emoji">🚀</span>
+            <div class="chip-text">
+              <span class="chip-title">ISRO Semi-Cryogenic Test</span>
+              <span class="chip-sub">Space Science & Technology</span>
+            </div>
+            <span class="chip-badge-test">Test Genuine ➔</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3-Step Simple How It Works Cards -->
+      <div class="hero-workflow-grid">
+        <div class="workflow-card">
+          <div class="wf-number">01</div>
+          <div class="wf-icon cyan">📋</div>
+          <h3>Paste or Drop Link</h3>
+          <p>Paste any text, WhatsApp message, Instagram caption, or online article link.</p>
+        </div>
+
+        <div class="workflow-card">
+          <div class="wf-number">02</div>
+          <div class="wf-icon emerald">🔬</div>
+          <h3>5-Layer Deep Forensic Scan</h3>
+          <p>We check wire services, quotes, sensationalism, and ML semantic classifiers.</p>
+        </div>
+
+        <div class="workflow-card">
+          <div class="wf-number">03</div>
+          <div class="wf-icon amber">💡</div>
+          <h3>Clear Advice & Truth Score</h3>
+          <p>Get a clear "Safe to Share" or "Do Not Forward" advice with direct fact-checking links.</p>
+        </div>
+      </div>
+
+      <!-- Spot the Difference Interactive Showcase -->
+      <div class="comparison-showcase-card">
+        <div class="comparison-header">
+          <span class="comparison-badge">Forensic Comparison</span>
+          <h3>Spot the Difference: Rumor vs. Verified Journalism</h3>
+          <p>See why millions fall for online misinformation and how Validata detects it instantly.</p>
+        </div>
+
+        <div class="comparison-grid">
+          <!-- Fake Forward Sample Card -->
+          <div class="compare-card compare-fake">
+            <div class="compare-card-badge red">🚫 Typical Viral Hoax</div>
+            <h4 class="compare-card-title">"SHOCKING: Drink lemon water & baking soda to CURE cancer overnight! Forward before deleted!!"</h4>
+            <ul class="compare-traits red">
+              <li>⚠️ <strong>Panic Urgency:</strong> Demands immediate forwarding before "censorship".</li>
+              <li>⚠️ <strong>Weasel Words:</strong> "Secret doctors who cannot be named".</li>
+              <li>⚠️ <strong>No Verification:</strong> Zero published studies or named hospital spokespersons.</li>
+              <li>⚠️ <strong>Emotional Traps:</strong> Uses ALL-CAPS and extreme miraculous promises.</li>
+            </ul>
+          </div>
+
+          <!-- Real Journalistic Wire Sample Card -->
+          <div class="compare-card compare-real">
+            <div class="compare-card-badge green">✅ Authentic News Wire</div>
+            <h4 class="compare-card-title">"World Health Organization prequalifies pediatric malaria vaccine following clinical trials"</h4>
+            <ul class="compare-traits green">
+              <li>✓ <strong>Named Attribution:</strong> Cites Dr. Tedros Adhanom Ghebreyesus, WHO Director-General.</li>
+              <li>✓ <strong>Primary Citations:</strong> Links directly to peer-reviewed data in <em>The Lancet</em> journal.</li>
+              <li>✓ <strong>Measured Tone:</strong> Objective language, transparent percentages, and partner details.</li>
+              <li>✓ <strong>Verified Publisher:</strong> Published by Reuters with institutional editorial standards.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- INTERACTIVE VERIFICATION WORKSPACE                       -->
+    <!-- ======================================================== -->
+    <section id="workspaceSection" class="workspace-card">
+      <div class="workspace-header-row">
+        <div>
+          <h2 class="workspace-title">Verification Workspace</h2>
+          <p class="workspace-sub">Choose your input type below. Validata supports direct messages, web links, and documents.</p>
+        </div>
+      </div>
+
+      <!-- Device-Friendly Navigation Tabs -->
+      <div class="workspace-tabs-bar" role="tablist">
+        <button class="ws-tab active" data-tab="tab-text" role="tab">
+          <span class="ws-tab-icon">💬</span>
+          <span>Check Message or Text</span>
+        </button>
+        <button class="ws-tab" data-tab="tab-url" role="tab">
+          <span class="ws-tab-icon">🌐</span>
+          <span>Check Web Link (URL)</span>
+        </button>
+        <button class="ws-tab" data-tab="tab-file" role="tab">
+          <span class="ws-tab-icon">📄</span>
+          <span>Upload Document</span>
+        </button>
+        <button class="ws-tab" data-tab="tab-history" role="tab">
+          <span class="ws-tab-icon">📜</span>
+          <span>Saved Checks (<span id="historyBadgeCount">0</span>)</span>
+        </button>
+        <button class="ws-tab" data-tab="tab-guide" role="tab">
+          <span class="ws-tab-icon">👵</span>
+          <span>Safety Guide for Seniors</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: DIRECT TEXT / WHATSAPP INPUT -->
+      <div id="tab-text" class="tab-panel active">
+        <form id="textAnalysisForm" class="verification-form">
+          <div class="form-row">
+            <div class="form-group flex-2">
+              <label for="inputHeadline">Headline or Summary of the Message <span class="required">*</span></label>
+              <input type="text" id="inputHeadline" class="form-input" placeholder="e.g. Drinking lemon water destroys cancer cells in 3 days" required>
+            </div>
+            <div class="form-group flex-1">
+              <label for="inputPublisher">Where did you see this? <span class="optional">(Optional)</span></label>
+              <input type="text" id="inputPublisher" class="form-input" placeholder="e.g. WhatsApp, Instagram, Facebook, Friend">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="label-with-clipboard">
+              <label for="inputBody">Full Message Text or Post Details <span class="required">*</span></label>
+              <div class="clipboard-actions">
+                <button type="button" id="btnPasteClipboard" class="btn-paste-clip" title="Paste text directly from your clipboard">
+                  <span>📋</span> Paste from Clipboard
+                </button>
+                <span id="charCount" class="char-count">0 words</span>
+              </div>
+            </div>
+            <textarea id="inputBody" rows="6" class="form-input textarea" placeholder="Paste the message, forward, or post text here..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="inputSourceUrl">Did the post mention a website link? <span class="optional">(Optional)</span></label>
+            <input type="url" id="inputSourceUrl" class="form-input" placeholder="https://news-site.com/article-url (if any)">
+          </div>
+
+          <div class="form-button-group">
+            <button type="submit" id="btnAnalyzeText" class="btn btn-emerald-glow">
+              <span class="btn-spinner" style="display:none;"></span>
+              <span class="btn-icon">⚡</span>
+              <span>Verify with Validata</span>
+            </button>
+            <button type="button" id="btnClearText" class="btn btn-glass">Clear Form</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 2: URL SCRAPER INPUT -->
+      <div id="tab-url" class="tab-panel">
+        <form id="urlAnalysisForm" class="verification-form">
+          <div class="form-group">
+            <label for="inputUrl">Enter or Paste Any Online News Link <span class="required">*</span></label>
+            <div class="input-with-button-row">
+              <input type="url" id="inputUrl" class="form-input" placeholder="https://www.reuters.com/business/... or https://thehindu.com/..." required>
+              <button type="submit" id="btnAnalyzeUrl" class="btn btn-emerald-glow">
+                <span class="btn-spinner" style="display:none;"></span>
+                <span>Scrape & Verify</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- URL Extraction Preview Card -->
+          <div id="urlPreviewContainer" class="scraped-preview-card" style="display: none;">
+            <div class="preview-badge">Scraped Article Preview:</div>
+            <h3 id="previewTitle" class="preview-title"></h3>
+            <div class="preview-meta">
+              <span id="previewPublisher" class="meta-item"></span>
+              <span id="previewAuthor" class="meta-item"></span>
+              <span id="previewDate" class="meta-item"></span>
+              <span id="previewWords" class="meta-item"></span>
+            </div>
+            <p id="previewSnippet" class="preview-snippet"></p>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 3: FILE & DOCUMENT UPLOADER -->
+      <div id="tab-file" class="tab-panel">
+        <div class="file-drop-zone" id="fileDropZone">
+          <div class="drop-icon">📁</div>
+          <h3>Drag and drop your news document here</h3>
+          <p class="drop-hint">Supports text files (.txt, .md, .doc, .json, .csv)</p>
+          <input type="file" id="fileInputElement" accept=".txt,.md,.json,.csv,.text" style="display:none;">
+          <button type="button" id="btnBrowseFile" class="btn btn-glass">
+            Choose File on This Device
+          </button>
+          <div id="fileUploadStatus" class="file-status-text"></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: SAVED HISTORY -->
+      <div id="tab-history" class="tab-panel">
+        <div class="history-filter-row">
+          <div>
+            <h3 class="panel-subtitle">Saved Verification Records</h3>
+            <p class="panel-subtext">Click on any previous item to review the diagnosis or print the report.</p>
+          </div>
+          <select id="historyFilterSelect" class="custom-select" aria-label="Filter records">
+            <option value="ALL">Show All Checks</option>
+            <option value="GENUINE">🟢 Only Genuine News</option>
+            <option value="QUESTIONABLE">🟡 Only Questionable</option>
+            <option value="FAKE">🔴 Only Fake / Fabricated</option>
+            <option value="SATIRE">🟣 Only Jokes / Satire</option>
+          </select>
+        </div>
+
+        <div class="history-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>Title / Headline</th>
+                <th>Source</th>
+                <th>Result</th>
+                <th>Truth Score</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="6" class="text-center empty-state">No verification records saved yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 5: SENIOR SAFETY GUIDE -->
+      <div id="tab-guide" class="tab-panel">
+        <div class="senior-safety-container">
+          <div class="safety-hero-text">
+            <h3 class="guide-main-title">👵 Safe Sharing Guide: How to Protect Your Family</h3>
+            <p class="guide-subtitle">Simple, straightforward rules to help everyone—including parents and grandparents—avoid falling for viral rumors.</p>
+          </div>
+
+          <div class="senior-rules-grid">
+            <div class="rule-card">
+              <div class="rule-icon red">🛑</div>
+              <h4>Rule 1: Look out for "Forwarded many times"</h4>
+              <p>When WhatsApp shows a message has been forwarded many times, it means the original author is unknown. Treat it as a rumor until verified.</p>
+            </div>
+
+            <div class="rule-card">
+              <div class="rule-icon amber">⏰</div>
+              <h4>Rule 2: Don't panic if it screams "URGENT"</h4>
+              <p>Scammers use artificial fear to force you to forward without thinking. Real government ministries announce news calmly through official television and press bureaus.</p>
+            </div>
+
+            <div class="rule-card">
+              <div class="rule-icon red">🍋</div>
+              <h4>Rule 3: Miracle kitchen cures are dangerous fakes</h4>
+              <p>Claims that lemon water, salt, or baking soda cure cancer or diabetes in 3 days are dangerous fabrications. Always consult certified physicians.</p>
+            </div>
+
+            <div class="rule-card">
+              <div class="rule-icon emerald">📞</div>
+              <h4>Rule 4: When in doubt, check Validata</h4>
+              <p>Before sending to friends or family groups, paste the message here or ask a tech-savvy family member to cross-check with official sources.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================== -->
+    <!-- DETAILED RESULTS SECTION (Revealed automatically)        -->
+    <!-- ======================================================== -->
+    <section id="resultsSection" class="results-section" style="display: none;">
+      
+      <!-- HERO VERDICT CARD -->
+      <div id="verdictHeroCard" class="card verdict-card">
+        <div class="verdict-main-row">
+          <div class="verdict-content">
+            <!-- Distinct Pill Badge -->
+            <div class="verdict-pill-badge" id="verdictPill">
+              <span class="verdict-dot"></span>
+              <span id="verdictText">GENUINE & SAFE TO SHARE</span>
+            </div>
+
+            <h2 id="resultArticleTitle" class="result-title"></h2>
+
+            <!-- Big Plain-Language Senior Action Advice Box -->
+            <div class="action-advice-banner" id="actionAdviceBox">
+              <div class="advice-icon" id="adviceIcon">💡</div>
+              <div class="advice-content">
+                <span class="advice-heading">Action Advice for You:</span>
+                <p id="actionAdviceText" class="advice-text"></p>
+              </div>
+            </div>
+
+            <p id="verdictSummary" class="verdict-summary"></p>
+            
+            <div class="result-meta-tags">
+              <span class="meta-tag" id="resultPublisherTag"><strong>Source:</strong> <span id="resultPublisher">Unknown</span></span>
+              <span class="meta-tag"><strong>Word Count:</strong> <span id="resultWordCount">0</span> words</span>
+              <span class="meta-tag" id="resultDateTag"><strong>Domain:</strong> Direct Input</span>
+            </div>
+          </div>
+
+          <!-- Animated Speedometer Gauge -->
+          <div class="gauge-container">
+            <div class="gauge-circle">
+              <svg viewBox="0 0 100 100" class="gauge-svg">
+                <circle cx="50" cy="50" r="42" class="gauge-bg-circle"></circle>
+                <circle cx="50" cy="50" r="42" id="gaugeProgressCircle" class="gauge-progress-circle"></circle>
+              </svg>
+              <div class="gauge-inner">
+                <span id="gaugeScoreNumber" class="gauge-score">0</span>
+                <span class="gauge-percent">%</span>
+                <span class="gauge-label">Truth Score</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- View Mode Selector (Simple vs Forensic) -->
+        <div class="view-mode-bar">
+          <span class="view-mode-label">Select Report View:</span>
+          <div class="view-mode-toggles">
+            <button id="btnViewSimple" class="view-toggle-btn active">👓 Simple Explanation</button>
+            <button id="btnViewForensic" class="view-toggle-btn">🔬 Detailed Forensic Breakdown</button>
+          </div>
+        </div>
+
+        <!-- Action Bar: Print PDF, Export JSON, New Check -->
+        <div class="verdict-actions">
+          <button id="btnPrintReport" class="btn btn-glass">
+            <span>🖨️</span> Print / Save PDF Report
+          </button>
+          <button id="btnExportJson" class="btn btn-glass">
+            <span>💾</span> Export JSON Data
+          </button>
+          <button id="btnNewAnalysis" class="btn btn-emerald-glow">
+            <span>🔄</span> Check Another Message
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 1: SIMPLE REASONS VIEW -->
+      <div id="simpleViewContainer" class="simple-reasons-view">
+        <div class="grid-2-col">
+          <!-- Red Flags Alert Box -->
+          <div class="card signal-card red-border">
+            <div class="signal-header">
+              <span class="signal-badge red">🚨 Warning Signs Detected (<span id="countRedFlags">0</span>)</span>
+            </div>
+            <ul id="listRedFlags" class="signal-list"></ul>
+          </div>
+
+          <!-- Trust Indicators Box -->
+          <div class="card signal-card green-border">
+            <div class="signal-header">
+              <span class="signal-badge green">🛡️ Trustworthy Signs Found (<span id="countTrustIndicators">0</span>)</span>
+            </div>
+            <ul id="listTrustIndicators" class="signal-list"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: DETAILED FORENSIC VIEW -->
+      <div id="forensicViewContainer" class="forensic-view" style="display: none;">
+        <div class="grid-2-col">
+          <!-- Radar Chart of 5 Pillars -->
+          <div class="card">
+            <h3 class="card-title">5-Layer Diagnostic Radar</h3>
+            <p class="card-desc">Evaluates harmony across all five verification dimensions.</p>
+            <div class="chart-wrapper">
+              <canvas id="radarChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Individual Sub-Scores -->
+          <div class="card">
+            <h3 class="card-title">Detection Engine Breakdown</h3>
+            <p class="card-desc">Individual algorithmic component scores computed by the Validata pipeline.</p>
+            <div class="pillar-list">
+              <div class="pillar-item">
+                <div class="pillar-info">
+                  <span class="pillar-title">1. Source & Publisher Trust</span>
+                  <span id="scoreSource" class="pillar-score">0/100</span>
+                </div>
+                <div class="progress-bar"><div id="barSource" class="progress-fill"></div></div>
+                <p id="descSource" class="pillar-desc"></p>
+              </div>
+
+              <div class="pillar-item">
+                <div class="pillar-info">
+                  <span class="pillar-title">2. Language Objectivity & Clickbait</span>
+                  <span id="scoreStyle" class="pillar-score">0/100</span>
+                </div>
+                <div class="progress-bar"><div id="barStyle" class="progress-fill"></div></div>
+                <p id="descStyle" class="pillar-desc"></p>
+              </div>
+
+              <div class="pillar-item">
+                <div class="pillar-info">
+                  <span class="pillar-title">3. Real Quotes & Attribution</span>
+                  <span id="scoreEvidence" class="pillar-score">0/100</span>
+                </div>
+                <div class="progress-bar"><div id="barEvidence" class="progress-fill"></div></div>
+                <p id="descEvidence" class="pillar-desc"></p>
+              </div>
+
+              <div class="pillar-item">
+                <div class="pillar-info">
+                  <span class="pillar-title">4. AI Language Pattern (ML)</span>
+                  <span id="scoreML" class="pillar-score">0/100</span>
+                </div>
+                <div class="progress-bar"><div id="barML" class="progress-fill"></div></div>
+                <p id="descML" class="pillar-desc"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXTRACTED CLAIMS & 1-CLICK VERIFICATION HUB -->
+      <div class="card claims-card">
+        <h3 class="card-title">🔍 Main Factual Claims & 1-Click Verification</h3>
+        <p class="card-desc">Key assertions identified in this submission. Tap either button to verify with live global registers.</p>
+        <div id="claimsListContainer" class="claims-list"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL FOR INSPECTING ARCHIVED REPORTS -->
+  <div id="reportModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Previous Verification Report</h3>
+        <button id="modalCloseBtn" class="icon-button close-btn" aria-label="Close modal">&times;</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+      <div class="modal-footer">
+        <button id="modalPrintBtn" class="btn btn-glass">Print Report</button>
+        <button id="modalDismissBtn" class="btn btn-emerald-glow">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODERN FOOTER -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-brand-row">
+        <img src="assets/validata_icon_clean.png" alt="Validata Mark" class="footer-logo-img">
+        <span class="footer-brand-title">Vali<span class="brand-highlight">data</span></span>
+        <span class="footer-tagline">AUTHENTICITY ENGINE</span>
+      </div>
+      <p class="footer-copyright">Validata Authenticity Engine &copy; 2026. Designed for media literacy, senior protection, and responsible digital communication.</p>
+      <p class="footer-sub">Independent multi-layer verification platform. Always cross-check critical medical claims with certified healthcare practitioners.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
