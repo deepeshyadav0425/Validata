@@ -1,0 +1,9 @@
+[project]
+name = "validata"
+version = "1.0.0"
+description = "Validata — Authenticity Engine & Disinformation Detection Platform"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.vercel]
+entrypoint = "backend.app:app"

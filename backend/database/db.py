@@ -8,14 +8,39 @@ import json
 from datetime import datetime
 
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "fakenews_history.db")
+def _determine_db_path():
+    """Determine writable database path (supports local and serverless /tmp)."""
+    if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        return "/tmp/fakenews_history.db"
+
+    local_path = os.path.join(os.path.dirname(__file__), "fakenews_history.db")
+    try:
+        test_file = os.path.join(os.path.dirname(__file__), ".write_test")
+        with open(test_file, "w") as f:
+            f.write("ok")
+        os.remove(test_file)
+        return local_path
+    except (OSError, IOError, PermissionError):
+        import tempfile
+        return os.path.join(tempfile.gettempdir(), "fakenews_history.db")
+
+
+DB_PATH = _determine_db_path()
 
 
 def get_db_connection():
     """Create and return a database connection with dict-like row factory."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    global DB_PATH
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn
+    except sqlite3.OperationalError:
+        import tempfile
+        DB_PATH = os.path.join(tempfile.gettempdir(), "fakenews_history.db")
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        return conn
 
 
 def init_db():
