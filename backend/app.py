@@ -26,7 +26,28 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
 app = Flask(__name__, static_folder=FRONTEND_DIR)
+app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # 2 MB max payload size
 CORS(app)
+
+
+@app.after_request
+def add_security_headers(response):
+    """Inject industry-standard HTTP security headers."""
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self';"
+    )
+    return response
+
 
 # Initialize database tables on startup
 init_db()
@@ -36,10 +57,10 @@ def evaluate_content(headline: str, body: str, source_url: str = "", declared_pu
     """
     Run multi-layer fake news analysis across all 5 detection engines.
     """
-    headline = (headline or "").strip()
-    body = (body or "").strip()
-    source_url = (source_url or "").strip()
-    declared_publisher = (declared_publisher or "").strip()
+    headline = (headline or "")[:1000].strip()
+    body = (body or "")[:50000].strip()
+    source_url = (source_url or "")[:2048].strip()
+    declared_publisher = (declared_publisher or "")[:200].strip()
 
     # 1. Scrape URL if provided and body is sparse
     scraped_meta = {}
@@ -256,7 +277,11 @@ def api_analyze_url():
 @app.route("/api/history", methods=["GET"])
 def api_get_history():
     """Retrieve audit analysis history."""
-    limit = int(request.args.get("limit", 50))
+    try:
+        limit = int(request.args.get("limit", 50))
+    except (ValueError, TypeError):
+        limit = 50
+    limit = max(1, min(limit, 100))
     verdict = request.args.get("verdict", None)
     history = get_history(limit=limit, verdict_filter=verdict)
     return jsonify({"history": history})

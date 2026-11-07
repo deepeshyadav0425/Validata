@@ -138,6 +138,36 @@ class TestFakeNewsDetector(unittest.TestCase):
         self.assertIn("verdict", post_data)
         self.assertIn("credibility_score", post_data)
 
+    def test_ssrf_protection(self):
+        """Verify SSRF validator blocks local loopback, private IPs, and non-http schemes."""
+        from backend.scraper.url_scraper import validate_url_security
+
+        # Loopback
+        is_safe, err = validate_url_security("http://127.0.0.1:5000/api/stats")
+        self.assertFalse(is_safe)
+        self.assertIn("loopback", err.lower())
+
+        # Localhost
+        is_safe, err = validate_url_security("http://localhost:8080")
+        self.assertFalse(is_safe)
+
+        # Cloud Metadata IP
+        is_safe, err = validate_url_security("http://169.254.169.254/latest/meta-data/")
+        self.assertFalse(is_safe)
+
+        # Dangerous non-http scheme
+        is_safe, err = validate_url_security("file:///etc/passwd")
+        self.assertFalse(is_safe)
+
+    def test_security_headers(self):
+        """Verify HTTP security headers are injected into responses."""
+        res = self.client.get("/api/sample-articles")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.headers.get("X-Content-Type-Options"), "nosniff")
+        self.assertEqual(res.headers.get("X-Frame-Options"), "SAMEORIGIN")
+        self.assertIn("Content-Security-Policy", res.headers)
+        self.assertEqual(res.headers.get("Referrer-Policy"), "strict-origin-when-cross-origin")
+
 
 if __name__ == "__main__":
     unittest.main()
