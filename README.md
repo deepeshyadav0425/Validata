@@ -1,5 +1,7 @@
 # Validata — Authenticity Engine
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdeepeshyadav0425%2FValidata)
+
 **Validata** is an AI and NLP-powered computational journalism platform designed to detect fake, misleading, sensationalist, or satirical news from any source (URLs, pasted article text, social media snippets, WhatsApp forwards, and claims) with explainable credibility scoring.
 
 ---
