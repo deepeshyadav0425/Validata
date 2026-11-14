@@ -46,6 +46,10 @@ def validate_url_security(url: str) -> tuple[bool, str | None]:
     if hostname_lower in ("localhost", "127.0.0.1", "::1", "0.0.0.0"):
         return False, "Access to local loopback addresses is blocked for security."
 
+    # Block non-standard ports to prevent port-scanning attacks
+    if parsed.port and parsed.port not in (80, 443, 8080, 8443):
+        return False, f"Access to port {parsed.port} is blocked for security."
+
     # Prevent AWS / GCP / Azure metadata endpoint access
     if hostname_lower == "169.254.169.254" or hostname_lower.endswith(".internal"):
         return False, "Access to cloud metadata and internal endpoints is blocked."
@@ -107,21 +111,37 @@ def scrape_article_from_url(url: str, timeout: int = 10) -> dict:
         return {"success": False, "error": f"Invalid URL structure: {e}"}
 
     try:
-        # Use stream=True to guard against huge payload DoS
-        resp = requests.get(
-            url,
-            headers=HEADERS,
-            timeout=timeout,
-            allow_redirects=True,
-            stream=True
-        )
+        from urllib.parse import urljoin
+        current_url = url
+        max_redirects = 3
+        resp = None
 
-        # Check final redirected URL for SSRF protection as well
-        if resp.url and resp.url != url:
-            is_redirect_safe, redir_err = validate_url_security(resp.url)
-            if not is_redirect_safe:
+        for redirect_count in range(max_redirects + 1):
+            # Validate every redirect hop BEFORE opening socket
+            is_hop_safe, hop_err = validate_url_security(current_url)
+            if not is_hop_safe:
+                if resp:
+                    resp.close()
+                return {"success": False, "error": f"Security Check on redirect: {hop_err}"}
+
+            resp = requests.get(
+                current_url,
+                headers=HEADERS,
+                timeout=timeout,
+                allow_redirects=False,
+                stream=True
+            )
+
+            if resp.is_redirect or resp.status_code in (301, 302, 303, 307, 308):
+                location = resp.headers.get("Location")
                 resp.close()
-                return {"success": False, "error": f"Security Check on redirect: {redir_err}"}
+                if not location:
+                    return {"success": False, "error": "Redirect missing Location header."}
+                current_url = urljoin(current_url, location)
+                if redirect_count == max_redirects:
+                    return {"success": False, "error": "Exceeded maximum allowed redirects (3)."}
+            else:
+                break
 
         if resp.status_code >= 400:
             resp.close()

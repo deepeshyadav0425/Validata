@@ -6,6 +6,8 @@ Orchestrates multi-layer analysis, scores inputs from any source, and serves the
 
 import os
 import json
+import time
+from collections import defaultdict
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
@@ -27,7 +29,27 @@ FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
 
 app = Flask(__name__, static_folder=FRONTEND_DIR)
 app.config["MAX_CONTENT_LENGTH"] = 2 * 1024 * 1024  # 2 MB max payload size
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=False)
+
+# In-memory sliding window rate limiter (60 requests/minute per IP)
+_RATE_LIMITS = defaultdict(list)
+_MAX_REQ_PER_MINUTE = 60
+
+
+@app.before_request
+def check_rate_limit():
+    """Protect API endpoints against flooding and Denial of Service (DoS)."""
+    if request.path.startswith("/api/"):
+        forwarded = request.headers.get("X-Forwarded-For")
+        client_ip = forwarded.split(",")[0].strip() if forwarded else (request.remote_addr or "127.0.0.1")
+        now = time.time()
+        _RATE_LIMITS[client_ip] = [t for t in _RATE_LIMITS[client_ip] if now - t < 60]
+        if len(_RATE_LIMITS[client_ip]) >= _MAX_REQ_PER_MINUTE:
+            return jsonify({
+                "error": "Rate limit exceeded. Please wait a minute before making more requests.",
+                "status": 429
+            }), 429
+        _RATE_LIMITS[client_ip].append(now)
 
 
 @app.after_request
@@ -38,6 +60,9 @@ def add_security_headers(response):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
+    response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
@@ -356,6 +381,33 @@ def api_sample_articles():
         }
     ]
     return jsonify({"samples": samples})
+
+
+# --- ERROR HANDLERS ---
+
+@app.errorhandler(400)
+def handle_bad_request(e):
+    return jsonify({"error": "Bad Request", "message": "Invalid request payload."}), 400
+
+
+@app.errorhandler(404)
+def handle_not_found(e):
+    return jsonify({"error": "Resource Not Found"}), 404
+
+
+@app.errorhandler(405)
+def handle_method_not_allowed(e):
+    return jsonify({"error": "Method Not Allowed"}), 405
+
+
+@app.errorhandler(413)
+def handle_payload_too_large(e):
+    return jsonify({"error": "Payload Too Large: Maximum allowed size is 2 MB."}), 413
+
+
+@app.errorhandler(500)
+def handle_server_error(e):
+    return jsonify({"error": "Internal Server Error"}), 500
 
 
 if __name__ == "__main__":

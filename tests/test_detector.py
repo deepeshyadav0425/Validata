@@ -139,7 +139,7 @@ class TestFakeNewsDetector(unittest.TestCase):
         self.assertIn("credibility_score", post_data)
 
     def test_ssrf_protection(self):
-        """Verify SSRF validator blocks local loopback, private IPs, and non-http schemes."""
+        """Verify SSRF validator blocks local loopback, private IPs, non-http schemes, and non-standard ports."""
         from backend.scraper.url_scraper import validate_url_security
 
         # Loopback
@@ -159,14 +159,51 @@ class TestFakeNewsDetector(unittest.TestCase):
         is_safe, err = validate_url_security("file:///etc/passwd")
         self.assertFalse(is_safe)
 
+        # Port scanning defense (SSH port 22, MySQL port 3306)
+        is_safe, err = validate_url_security("http://example.com:22")
+        self.assertFalse(is_safe)
+        self.assertIn("port 22 is blocked", err.lower())
+
+        is_safe, err = validate_url_security("http://example.com:3306")
+        self.assertFalse(is_safe)
+        self.assertIn("port 3306 is blocked", err.lower())
+
     def test_security_headers(self):
-        """Verify HTTP security headers are injected into responses."""
+        """Verify comprehensive modern HTTP security headers are injected."""
         res = self.client.get("/api/sample-articles")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.headers.get("X-Content-Type-Options"), "nosniff")
         self.assertEqual(res.headers.get("X-Frame-Options"), "SAMEORIGIN")
-        self.assertIn("Content-Security-Policy", res.headers)
+        self.assertEqual(res.headers.get("Strict-Transport-Security"), "max-age=31536000; includeSubDomains")
+        self.assertEqual(res.headers.get("Cross-Origin-Opener-Policy"), "same-origin")
+        self.assertEqual(res.headers.get("Cross-Origin-Resource-Policy"), "same-origin")
         self.assertEqual(res.headers.get("Referrer-Policy"), "strict-origin-when-cross-origin")
+        self.assertIn("Content-Security-Policy", res.headers)
+
+    def test_payload_limit_enforced(self):
+        """Verify that payloads exceeding 2 MB are rejected with HTTP 413."""
+        huge_text = "A" * (2 * 1024 * 1024 + 1024)
+        res = self.client.post("/api/analyze/text", json={"headline": "Test", "body": huge_text})
+        self.assertEqual(res.status_code, 413)
+
+    def test_sqli_resilience(self):
+        """Verify SQL injection attempts in history parameters are fully sanitized."""
+        # 1. SQLi attempt in verdict filter
+        sqli_filter = "' OR 1=1 --"
+        res = self.client.get(f"/api/history?verdict={sqli_filter}")
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertIn("history", data)
+
+        # 2. SQLi attempt in history ID endpoint
+        res_item = self.client.get("/api/history/0")
+        self.assertEqual(res_item.status_code, 404)
+
+    def test_clean_error_handlers(self):
+        """Verify custom error handlers return clean JSON without disclosing stack traces."""
+        res_404 = self.client.get("/api/nonexistent-endpoint-xyz")
+        self.assertEqual(res_404.status_code, 404)
+        self.assertEqual(res_404.content_type, "application/json")
 
 
 if __name__ == "__main__":

@@ -526,14 +526,14 @@ function displayResults(report) {
       const div = document.createElement("div");
       div.className = "claim-item";
       div.innerHTML = `
-        <div class="claim-type">${c.type}</div>
-        <p class="claim-quote">"${escapeHtml(c.claim_text)}"</p>
-        <p class="claim-tip">💡 <strong>Verification Tip:</strong> ${escapeHtml(c.verification_tip)}</p>
+        <div class="claim-type">${escapeHtml(c.type || "")}</div>
+        <p class="claim-quote">"${escapeHtml(c.claim_text || "")}"</p>
+        <p class="claim-tip">💡 <strong>Verification Tip:</strong> ${escapeHtml(c.verification_tip || "")}</p>
         <div class="claim-links">
-          <a href="${c.google_factcheck_url}" target="_blank" rel="noopener noreferrer" class="fact-link">
+          <a href="${sanitizeUrl(c.google_factcheck_url)}" target="_blank" rel="noopener noreferrer" class="fact-link">
             🔍 Check Google Fact Check Explorer ↗
           </a>
-          <a href="${c.news_search_url}" target="_blank" rel="noopener noreferrer" class="fact-link">
+          <a href="${sanitizeUrl(c.news_search_url)}" target="_blank" rel="noopener noreferrer" class="fact-link">
             📰 Search Reuters & BBC News Wire ↗
           </a>
         </div>
@@ -671,15 +671,16 @@ async function fetchHistory() {
     items.forEach(item => {
       const tr = document.createElement("tr");
       const v = (item.verdict || "UNKNOWN").toLowerCase();
+      const safeId = parseInt(item.id, 10);
       tr.innerHTML = `
-        <td style="white-space:nowrap;font-size:0.88rem;color:var(--text-muted);">${item.created_at}</td>
+        <td style="white-space:nowrap;font-size:0.88rem;color:var(--text-muted);">${escapeHtml(item.created_at || "")}</td>
         <td><strong>${escapeHtml(item.title.slice(0, 50))}${item.title.length > 50 ? "..." : ""}</strong></td>
         <td>${escapeHtml(item.source_domain || item.publisher || "Direct Message")}</td>
-        <td><span class="status-badge ${v}">${item.verdict}</span></td>
-        <td><strong style="font-family:var(--font-mono);color:var(--cyan-neon);">${Math.round(item.credibility_score)}%</strong></td>
+        <td><span class="status-badge ${escapeHtml(v)}">${escapeHtml(item.verdict || "UNKNOWN")}</span></td>
+        <td><strong style="font-family:var(--font-mono);color:var(--cyan-neon);">${Math.round(Number(item.credibility_score) || 0)}%</strong></td>
         <td>
-          <button class="btn-table-action" onclick="viewHistoryItem(${item.id})">Read Report</button>
-          <button class="btn-table-action delete" onclick="deleteHistoryEntry(${item.id})">Delete</button>
+          <button class="btn-table-action" onclick="viewHistoryItem(${safeId})">Read Report</button>
+          <button class="btn-table-action delete" onclick="deleteHistoryEntry(${safeId})">Delete</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -690,23 +691,27 @@ async function fetchHistory() {
 }
 
 async function viewHistoryItem(id) {
+  const safeId = parseInt(id, 10);
+  if (isNaN(safeId) || safeId <= 0) return;
+
   try {
-    const res = await fetch(`/api/history/${id}`);
+    const res = await fetch(`/api/history/${safeId}`);
     const report = await res.json();
 
     document.getElementById("modalTitle").textContent = report.title || "Archived Report";
     const body = document.getElementById("modalBody");
+    const v = (report.verdict || "QUESTIONABLE").toLowerCase();
     body.innerHTML = `
       <div style="margin-bottom:1rem;">
-        <span class="status-badge ${report.verdict.toLowerCase()}">${report.verdict}</span>
-        <strong style="margin-left:0.5rem;font-size:1.2rem;color:var(--cyan-neon);">Score: ${Math.round(report.credibility_score)}%</strong>
-        <span style="margin-left:0.5rem;color:var(--text-muted);font-size:0.85rem;">(${report.created_at})</span>
+        <span class="status-badge ${escapeHtml(v)}">${escapeHtml(report.verdict || "UNKNOWN")}</span>
+        <strong style="margin-left:0.5rem;font-size:1.2rem;color:var(--cyan-neon);">Score: ${Math.round(Number(report.credibility_score) || 0)}%</strong>
+        <span style="margin-left:0.5rem;color:var(--text-muted);font-size:0.85rem;">(${escapeHtml(report.created_at || "")})</span>
       </div>
-      <p style="margin-bottom:1rem;color:var(--text-secondary);font-size:1.05rem;">${escapeHtml(report.summary)}</p>
+      <p style="margin-bottom:1rem;color:var(--text-secondary);font-size:1.05rem;">${escapeHtml(report.summary || "")}</p>
       
       <div style="background:var(--brand-navy-input);padding:1.15rem;border-radius:var(--radius-sm);margin-bottom:1.35rem;border:1px solid var(--border-color);">
         <p><strong>Source / Where it came from:</strong> ${escapeHtml(report.source_domain || report.publisher || "Direct Message")}</p>
-        <p><strong>Word Count:</strong> ${report.word_count} words</p>
+        <p><strong>Word Count:</strong> ${escapeHtml(String(report.word_count || 0))} words</p>
       </div>
 
       <h4 style="margin-bottom:0.5rem;color:var(--coral-red);">🚨 Warning Signs Found:</h4>
@@ -754,11 +759,24 @@ function exportReportJson() {
 
 function escapeHtml(str) {
   if (!str) return "";
-  return str.replace(/[&<>"']/g, m => ({
+  return String(str).replace(/[&<>"']/g, m => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
     '"': '&quot;',
     "'": '&#39;'
   }[m]));
+}
+
+function sanitizeUrl(url) {
+  if (!url) return "#";
+  try {
+    const u = new URL(url);
+    if (u.protocol === "http:" || u.protocol === "https:") {
+      return escapeHtml(url);
+    }
+  } catch (e) {
+    // Malformed URL, block execution
+  }
+  return "#";
 }
